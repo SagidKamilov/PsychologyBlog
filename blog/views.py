@@ -1,14 +1,56 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404, render
+from django.views.generic import ListView, DetailView
+from django.core.mail import send_mail
+
+from psyhologyblog.settings import EMAIL_HOST_USER
 from .models import Post
+from .forms import EmailPostForm
 
 
-def post_list(request):
-    posts = Post.objects.all()
+def post_share(request, post_id):
+    post = get_object_or_404(klass=Post,
+                             id=post_id,
+                             status=Post.Status.PUBLISHED)
 
-    return render(request=request, template_name='blog/post_list.html', context={'posts': posts})
+    sent = False
+
+    if request.method == 'POST':
+        form = EmailPostForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            post_url = request.build_absolute_uri(
+                post.get_absolute_url())
+            subject = f"{cd['name']} рекомендует " \
+                      f"{post.title}"
+            message = f"Прочти статью {post.title} по ссылке {post_url}\n\n" \
+                      f"{cd['name']} комментирует: {cd['comments']}"
+            send_mail(subject=subject, message=message, from_email=EMAIL_HOST_USER,
+                      recipient_list=[cd['to']])
+            sent = True
+    else:
+        form = EmailPostForm()
+    return render(request=request, template_name='blog/post_share.html', context={'post': post, 'form': form, 'sent': sent})
 
 
-def post_detail(request, post_id):
-    post = get_object_or_404(Post, id=post_id, status=Post.Status.PUBLISHED)
+class PostListView(ListView):
+    model = Post
+    queryset = Post.objects.all()
+    context_object_name = 'posts'
+    paginate_by = 3
+    template_name = 'blog/post_list.html'
 
-    return render(request=request, template_name='blog/post_detail.html', context={'post': post})
+
+class PostDetailView(DetailView):
+    model = Post
+    queryset = Post.objects.filter(status=Post.Status.PUBLISHED)
+    context_object_name = 'post'
+    slug_url_kwarg = 'post'
+    template_name = 'blog/post_detail.html'
+
+    def get_object(self, queryset=None):
+        year = self.kwargs['year']
+        month = self.kwargs['month']
+        day = self.kwargs['day']
+        slug = self.kwargs['post']
+        return get_object_or_404(klass=self.queryset, dt_publish__year=year, dt_publish__month=month,
+                                 dt_publish__day=day, slug=slug)
