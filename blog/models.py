@@ -11,7 +11,7 @@ class Post(models.Model):
         PUBLISHED = 'PB', 'Публиковать'
 
     title = models.CharField(max_length=255, verbose_name='заголовок')
-    slug = models.SlugField(max_length=255, unique=True, verbose_name='слаг')
+    slug = models.SlugField(max_length=255, unique_for_date='dt_publish', verbose_name='слаг')
     author = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='blog_posts', verbose_name='автор')
     content = models.TextField(blank=True, verbose_name='контент')
     dt_created = models.DateTimeField(default=timezone.now, verbose_name='дата создания')
@@ -30,7 +30,10 @@ class Post(models.Model):
         ]
 
     def get_absolute_url(self):
-        return reverse(viewname='blog:post_detail', args=[self.id])
+        return reverse(viewname='blog:post_detail', args=[self.dt_publish.year,
+                                                          self.dt_publish.month,
+                                                          self.dt_publish.day,
+                                                          self.slug])
 
     def __str__(self):
         return self.title
