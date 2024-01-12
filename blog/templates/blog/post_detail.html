@@ -3,7 +3,23 @@
 
 {% block content %}
     <h1>{{ post.title }}</h1>
-    <p class="date">Опубликовано {{ post.publish }} автором {{ post.author }}</p>
+    <p class="date">Опубликовано {{ post.dt_publish }} автором {{ post.author }}</p>
     {{ post.content|linebreaks }}
     <p>Хочешь <a href="{% url 'blog:post_share' post.id %}">>> поделиться <<</a> постом?</p>
+{#    <div class="write">#}
+{#            {% include 'blog/includes/comment_form.html' %}#}
+{#    </div>#}
+    <div class="all-comments">
+        {% for comment in comments %}
+            <div class="comment">
+                <p class="info"> Комментарий от {{ comment.name }}. Создан {{ comment.dt_created }}</p>
+                {{ comment.content|linebreaks }}
+            </div>
+        {% empty %}
+            <h2>Комментариев нет.</h2>
+        {% endfor %}
+    </div>
+    <div class="write-comment">
+            {% include 'blog/includes/comment_form.html' %}
+    </div>
 {% endblock %}
