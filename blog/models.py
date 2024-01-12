@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
+from taggit.managers import TaggableManager
 
 
 class Post(models.Model):
@@ -18,6 +19,7 @@ class Post(models.Model):
     dt_publish = models.DateTimeField(auto_now_add=True, verbose_name='дата публикации')
     dt_updated = models.DateTimeField(auto_now=True, verbose_name='дата обновления')
     status = models.CharField(max_length=2, choices=Status.choices, default=Status.DRAFT, verbose_name='статус')
+    tags = TaggableManager()
 
     objects = models.Manager()
 
@@ -37,3 +39,26 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Comment(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments', verbose_name='пост')
+    name = models.CharField(max_length=255, verbose_name='имя пользователя')
+    email = models.EmailField(verbose_name='эл. почта')
+    content = models.TextField(verbose_name='контент')
+    dt_created = models.DateTimeField(auto_now_add=True, verbose_name='дата создания')
+    dt_updated = models.DateTimeField(auto_now=True, verbose_name='дата обновления')
+    active = models.BooleanField(default=True, verbose_name='активен')
+
+    objects = models.Manager()
+
+    class Meta:
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'комментарии'
+        ordering = ['dt_created']
+        indexes = [
+            models.Index(fields=['dt_created'])
+        ]
+
+    def __str__(self):
+        return f"Прокомментировал {self.name} пост \"{self.post}\""
