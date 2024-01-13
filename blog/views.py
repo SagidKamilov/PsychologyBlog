@@ -3,10 +3,11 @@ from django.core.mail import send_mail
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.db.models import Count
+from django.contrib.postgres.search import SearchVector
 
 from psyhologyblog.settings import EMAIL_HOST_USER
 from .models import Post, Tag
-from .forms import EmailPostForm, CommentForm
+from .forms import EmailPostForm, CommentForm, FormSearch
 
 
 @require_POST
@@ -95,3 +96,24 @@ def same_posts_find(post: Post):
     similar_posts = Post.objects.filter(tags__in=post_tags_ids).exclude(id=post.id)
     similar_posts = similar_posts.annotate(same_tags=Count('tags')).order_by('-same_tags', '-dt_publish')[:4]
     return similar_posts
+
+
+def post_search(request):
+    form = FormSearch()
+    query = None
+    results = []
+
+    if 'query' in request.GET:
+        form = FormSearch(request.GET)
+        if form.is_valid():
+            query = form.cleaned_data['query']
+            results = Post.objects.filter(status=Post.Status.PUBLISHED).annotate(
+                search=SearchVector('title', 'content'),).filter(search=query)
+
+    context = {
+        'form': form,
+        'query': query,
+        'results': results
+    }
+
+    return render(request=request, template_name='blog/post_search.html', context=context)
