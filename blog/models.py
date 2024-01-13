@@ -2,7 +2,22 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
-from taggit.managers import TaggableManager
+# from taggit.managers import TaggableManager
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=50, verbose_name='имя')
+    slug = models.SlugField(max_length=50, unique=True, verbose_name='слаг')\
+
+    objects = models.Manager()
+
+    class Meta:
+        verbose_name = 'тег'
+        verbose_name_plural = 'теги'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 
 class Post(models.Model):
@@ -19,7 +34,8 @@ class Post(models.Model):
     dt_publish = models.DateTimeField(auto_now_add=True, verbose_name='дата публикации')
     dt_updated = models.DateTimeField(auto_now=True, verbose_name='дата обновления')
     status = models.CharField(max_length=2, choices=Status.choices, default=Status.DRAFT, verbose_name='статус')
-    tags = TaggableManager()
+    tags = models.ManyToManyField(to=Tag, related_name='posts', verbose_name='тег')
+    # tags = TaggableManager()
 
     objects = models.Manager()
 

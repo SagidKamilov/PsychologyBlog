@@ -4,7 +4,20 @@
 {% block content %}
     <h1>{{ post.title }}</h1>
     <p class="date">Опубликовано {{ post.dt_publish }} автором {{ post.author }}</p>
-    {{ post.content|linebreaks }}
+
+    {% if tags %}
+        {% for tag in tags %}
+            <p>{{ tag }}</p>
+        {% endfor %}
+    {% endif %}
+    <div class="same-posts">
+        {% for post in same_posts %}
+            <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+        {% endfor %}
+    </div>
+    <br><br>
+
+    <p>{{ post.content }}</p>
     <p>Хочешь <a href="{% url 'blog:post_share' post.id %}">>> поделиться <<</a> постом?</p>
 {#    <div class="write">#}
 {#            {% include 'blog/includes/comment_form.html' %}#}
