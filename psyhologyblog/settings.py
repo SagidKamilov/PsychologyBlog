@@ -29,10 +29,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'django.contrib.sitemaps',
     'django_extensions',
     'blog.apps.BlogConfig',
-    'django.contrib.sites',
-    'django.contrib.sitemaps'
+    'registration.apps.RegistrationConfig',
 ]
 
 MIDDLEWARE = [
@@ -71,8 +72,10 @@ WSGI_APPLICATION = 'psyhologyblog.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'blog',
+        'USER': 'admin',
+        'PASSWORD': 'adminpassword'
     }
 }
 
