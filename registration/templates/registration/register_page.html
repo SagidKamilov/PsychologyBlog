@@ -1,0 +1,11 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Содай свое пространство{% endblock %}
+
+{% block content %}
+    <form method="POST">
+        {% csrf_token %}
+        {{ form }}
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+{% endblock %}
