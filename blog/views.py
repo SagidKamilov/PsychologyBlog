@@ -107,7 +107,7 @@ def post_search(request):
         form = FormSearch(request.GET)
         if form.is_valid():
             query = form.cleaned_data['query']
-            results = Post.objects.filter(status=Post.Status.PUBLISHED).annotate(
+            results = Post.objects.filter(status=Post.Status.PUBLISHED).annotate(   
                 search=SearchVector('title', 'content'),).filter(search=query)
 
     context = {
